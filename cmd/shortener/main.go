@@ -52,6 +52,8 @@ func shortenerPage(res http.ResponseWriter, req *http.Request) {
 		addUrl(res, req)
 	} else if req.Method == http.MethodGet {
 		getUrl(res, req)
+	} else {
+		res.WriteHeader(http.StatusBadRequest)
 	}
 }
 
