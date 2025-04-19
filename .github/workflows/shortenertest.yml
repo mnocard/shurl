@@ -18,7 +18,7 @@ jobs:
 
   shortenertest:
     runs-on: ubuntu-latest
-    container: golang:1.23.6
+    container: golang:1.24
     needs: branchtest
 
     services:
@@ -58,7 +58,7 @@ jobs:
 
       - name: Build server binary
         run: |
-          cd ../cmd/shortener
+          cd cmd/shortener
           go build -buildvcs=false -o shortener
 
       - name: "Code increment #1"
