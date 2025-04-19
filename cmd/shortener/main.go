@@ -16,7 +16,7 @@ func getHash(b []byte) string {
 	return sha[0:8]
 }
 
-func addUrl(res http.ResponseWriter, req *http.Request) {
+func addURL(res http.ResponseWriter, req *http.Request) {
 	if req.Header.Get("content-type") != "text/plain" {
 		res.WriteHeader(http.StatusBadRequest)
 		res.Write([]byte("wrong content-type"))
@@ -38,7 +38,7 @@ func addUrl(res http.ResponseWriter, req *http.Request) {
 	res.WriteHeader(http.StatusOK)
 }
 
-func getUrl(res http.ResponseWriter, req *http.Request) {
+func getURL(res http.ResponseWriter, req *http.Request) {
 	hash := req.RequestURI[1:]
 	address := addresses[hash]
 
@@ -49,9 +49,9 @@ func getUrl(res http.ResponseWriter, req *http.Request) {
 
 func shortenerPage(res http.ResponseWriter, req *http.Request) {
 	if req.Method == http.MethodPost {
-		addUrl(res, req)
+		addURL(res, req)
 	} else if req.Method == http.MethodGet {
-		getUrl(res, req)
+		getURL(res, req)
 	} else {
 		res.WriteHeader(http.StatusBadRequest)
 	}
