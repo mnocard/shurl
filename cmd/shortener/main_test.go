@@ -145,6 +145,7 @@ func TestGetURLHandler(t *testing.T) {
 			h(w, request)
 
 			result := w.Result()
+			result.Body.Close()
 
 			require.Equal(t, tt.want.statusCode, result.StatusCode)
 			require.Equal(t, tt.want.contentType, result.Header.Get("Content-Type"))
