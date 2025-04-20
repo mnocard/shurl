@@ -9,6 +9,9 @@ import (
 
 var addresses = make(map[string]string)
 
+const baseUri = "http://localhost:8080"
+const linkUri = "/link/"
+
 func getHash(b []byte) string {
 	h := sha1.New()
 	h.Write(b)
@@ -16,11 +19,15 @@ func getHash(b []byte) string {
 	return sha[0:8]
 }
 
-func addURL(res http.ResponseWriter, req *http.Request) {
+func AddURL(res http.ResponseWriter, req *http.Request) {
+	if req.Method != http.MethodPost {
+		res.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	body, err := io.ReadAll(req.Body)
 	if err != nil {
 		res.WriteHeader(http.StatusBadRequest)
-		res.Write([]byte("bad request"))
 		return
 	}
 
@@ -29,12 +36,18 @@ func addURL(res http.ResponseWriter, req *http.Request) {
 
 	res.Header().Set("content-type", "text/plain")
 	res.WriteHeader(http.StatusCreated)
-	res.Write([]byte("http://localhost:8080/" + hash))
+	res.Write([]byte(baseUri + linkUri + hash))
 }
 
-func getURL(res http.ResponseWriter, req *http.Request) {
-	hash := req.URL.Path[1:]
+func GetURL(res http.ResponseWriter, req *http.Request) {
+	if req.Method != http.MethodGet {
+		res.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	hash := req.URL.Path[len(linkUri):]
 	address, exists := addresses[hash]
+
 	if !exists {
 		res.WriteHeader(http.StatusBadRequest)
 		return
@@ -46,19 +59,10 @@ func getURL(res http.ResponseWriter, req *http.Request) {
 	res.WriteHeader(http.StatusTemporaryRedirect)
 }
 
-func shortenerPage(res http.ResponseWriter, req *http.Request) {
-	if req.Method == http.MethodPost {
-		addURL(res, req)
-	} else if req.Method == http.MethodGet {
-		getURL(res, req)
-	} else {
-		res.WriteHeader(http.StatusBadRequest)
-	}
-}
-
 func main() {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", shortenerPage)
+	mux.HandleFunc("/", AddURL)
+	mux.HandleFunc(linkUri, GetURL)
 	err := http.ListenAndServe(`:8080`, mux)
 	if err != nil {
 		panic(err)
