@@ -17,12 +17,6 @@ func getHash(b []byte) string {
 }
 
 func addURL(res http.ResponseWriter, req *http.Request) {
-	if req.Header.Get("content-type") != "text/plain" {
-		res.WriteHeader(http.StatusBadRequest)
-		res.Write([]byte("wrong content-type"))
-		return
-	}
-
 	body, err := io.ReadAll(req.Body)
 	if err != nil {
 		res.WriteHeader(http.StatusBadRequest)
@@ -33,17 +27,22 @@ func addURL(res http.ResponseWriter, req *http.Request) {
 	hash := getHash(body)
 	addresses[hash] = string(body)
 
-	res.Write([]byte(hash))
 	res.Header().Set("content-type", "text/plain")
-	res.WriteHeader(http.StatusOK)
+	res.WriteHeader(http.StatusCreated)
+	res.Write([]byte("http://localhost:8080/" + hash))
 }
 
 func getURL(res http.ResponseWriter, req *http.Request) {
-	hash := req.RequestURI[1:]
-	address := addresses[hash]
+	hash := req.URL.Path[1:]
+	address, exists := addresses[hash]
+	if !exists {
+		res.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
+	res.Header().Add("Access-Control-Expose-Headers", "Authorization")
 	res.Header().Set("content-type", "text/plain")
-	res.Header().Set("Location", address)
+	res.Header().Add("Location", address)
 	res.WriteHeader(http.StatusTemporaryRedirect)
 }
 
