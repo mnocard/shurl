@@ -133,6 +133,7 @@ func TestGetURLHandler(t *testing.T) {
 
 	result := w.Result()
 	shortURL, _ := io.ReadAll(result.Body)
+	result.Body.Close()
 
 	fmt.Println(string(shortURL))
 
