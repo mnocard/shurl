@@ -9,8 +9,8 @@ import (
 
 var addresses = make(map[string]string)
 
-const baseUri = "http://localhost:8080"
-const linkUri = "/link/"
+const baseURI = "http://localhost:8080"
+const linkURI = "/link/"
 
 func getHash(b []byte) string {
 	h := sha1.New()
@@ -36,7 +36,7 @@ func AddURL(res http.ResponseWriter, req *http.Request) {
 
 	res.Header().Set("content-type", "text/plain")
 	res.WriteHeader(http.StatusCreated)
-	res.Write([]byte(baseUri + linkUri + hash))
+	res.Write([]byte(baseURI + linkURI + hash))
 }
 
 func GetURL(res http.ResponseWriter, req *http.Request) {
@@ -45,7 +45,7 @@ func GetURL(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	hash := req.URL.Path[len(linkUri):]
+	hash := req.URL.Path[len(linkURI):]
 	address, exists := addresses[hash]
 
 	if !exists {
@@ -62,7 +62,7 @@ func GetURL(res http.ResponseWriter, req *http.Request) {
 func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", AddURL)
-	mux.HandleFunc(linkUri, GetURL)
+	mux.HandleFunc(linkURI, GetURL)
 	err := http.ListenAndServe(`:8080`, mux)
 	if err != nil {
 		panic(err)
