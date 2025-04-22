@@ -2,12 +2,14 @@ package main
 
 import (
 	"bytes"
-	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
+	"github.com/go-chi/chi"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -103,7 +105,6 @@ func TestGetURLHandler(t *testing.T) {
 		{
 			name: "getURL correct",
 			request: request{
-				url:    "/",
 				method: http.MethodGet,
 			},
 			want: want{
@@ -115,43 +116,72 @@ func TestGetURLHandler(t *testing.T) {
 		{
 			name: "getURL wrong method",
 			request: request{
-				url:    "/",
 				method: http.MethodPost,
 			},
 			want: want{
 				contentType: "",
-				statusCode:  400,
+				statusCode:  405,
 				response:    "",
 			},
 		},
 	}
 
-	r := httptest.NewRequest(http.MethodPost, "/", bytes.NewReader([]byte(url)))
-	w := httptest.NewRecorder()
-	h := http.HandlerFunc(AddURL)
-	h(w, r)
+	log.Print("NewRouter")
+	r := chi.NewRouter()
+	r.Route("/", func(r chi.Router) {
+		r.Post("/", AddURL)
+		r.Route("/link", func(r chi.Router) {
+			r.Get("/{hash}", GetURL)
+		})
+	})
 
-	result := w.Result()
-	shortURL, _ := io.ReadAll(result.Body)
-	result.Body.Close()
+	ts := httptest.NewServer(r)
+	defer ts.Close()
 
-	fmt.Println(string(shortURL))
+	log.Print("AddURL")
+	req, _ := http.NewRequest(http.MethodPost, ts.URL, bytes.NewReader([]byte(url)))
+	resp, _ := http.DefaultClient.Do(req)
+	data, _ := io.ReadAll(resp.Body)
+	resp.Body.Close()
+	shortURL := string(data)
+
+	log.Print("ts.URL: " + ts.URL)
+	log.Print("shortURL: " + shortURL)
+	shortURL = strings.Replace(shortURL, BaseURI, ts.URL, 1)
+	log.Print("shortURL: " + shortURL)
 
 	for _, tt := range tests {
+		log.Print("GetURL")
 		t.Run(tt.name, func(t *testing.T) {
-			request := httptest.NewRequest(tt.request.method, string(shortURL), nil)
-			w := httptest.NewRecorder()
-			h := http.HandlerFunc(GetURL)
-			h(w, request)
+			req, err := http.NewRequest(tt.request.method, shortURL, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-			result := w.Result()
-			result.Body.Close()
+			client := &http.Client{
+				CheckRedirect: func(req *http.Request, via []*http.Request) error {
+					return http.ErrUseLastResponse
+				},
+			}
 
-			require.Equal(t, tt.want.statusCode, result.StatusCode)
-			require.Equal(t, tt.want.contentType, result.Header.Get("Content-Type"))
+			resp, err := client.Do(req)
+			if err != nil {
+				t.Fatal(err)
+			}
 
-			if tt.want.statusCode != http.StatusBadRequest {
-				require.Equal(t, url, result.Header.Get("Location"))
+			respBody, err := io.ReadAll(resp.Body)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer resp.Body.Close()
+
+			log.Print(string(respBody))
+
+			require.Equal(t, tt.want.statusCode, resp.StatusCode)
+			require.Equal(t, tt.want.contentType, resp.Header.Get("Content-Type"))
+
+			if tt.want.statusCode != resp.StatusCode {
+				require.Equal(t, url, resp.Header.Get("Location"))
 			}
 		})
 	}

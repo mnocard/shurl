@@ -4,7 +4,11 @@ import (
 	"crypto/sha1"
 	"encoding/hex"
 	"io"
+	"log"
 	"net/http"
+
+	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/middleware"
 )
 
 var addresses = make(map[string]string)
@@ -46,25 +50,34 @@ func GetURL(res http.ResponseWriter, req *http.Request) {
 	}
 
 	hash := req.URL.Path[len(LinkURI):]
-	address, exists := addresses[hash]
+	hash2 := chi.URLParam(req, "hash")
+	log.Printf("hash 1: %s", hash)
+	log.Printf("hash 2: %s", hash2)
+
+	address, exists := addresses[hash2]
 
 	if !exists {
 		res.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	res.Header().Add("Access-Control-Expose-Headers", "Authorization")
-	res.Header().Set("content-type", "text/plain")
+	res.Header().Add("Access-Control-Expose-Headers", "*")
+	res.Header().Add("content-type", "text/plain")
 	res.Header().Add("Location", address)
 	res.WriteHeader(http.StatusTemporaryRedirect)
 }
 
 func main() {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", AddURL)
-	mux.HandleFunc(LinkURI, GetURL)
-	err := http.ListenAndServe(`:8080`, mux)
-	if err != nil {
-		panic(err)
-	}
+	r := chi.NewRouter()
+
+	r.Use(middleware.Logger)
+
+	r.Route("/", func(r chi.Router) {
+		r.Post("/", AddURL)
+		r.Route("/link", func(r chi.Router) {
+			r.Get("/{hash}", GetURL)
+		})
+	})
+
+	log.Fatal(http.ListenAndServe(":8080", r))
 }
