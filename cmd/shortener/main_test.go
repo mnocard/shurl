@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/go-chi/chi"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -63,7 +64,7 @@ func TestAddURLHandler(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			request := httptest.NewRequest(tt.request.method, tt.request.url, bytes.NewReader(tt.request.body))
 			w := httptest.NewRecorder()
-			h := http.HandlerFunc(addURL)
+			h := http.HandlerFunc(AddURL)
 			h(w, request)
 
 			result := w.Result()
@@ -126,9 +127,15 @@ func TestGetURLHandler(t *testing.T) {
 	}
 
 	log.Print("NewRouter")
-	r := createMux()
-	ts := httptest.NewUnstartedServer(r)
-	ts.Start()
+	r := chi.NewRouter()
+	r.Route("/", func(r chi.Router) {
+		r.Post("/", AddURL)
+		r.Route("/link", func(r chi.Router) {
+			r.Get("/{hash}", GetURL)
+		})
+	})
+
+	ts := httptest.NewServer(r)
 	defer ts.Close()
 
 	log.Print("AddURL")
@@ -140,22 +147,12 @@ func TestGetURLHandler(t *testing.T) {
 
 	log.Print("ts.URL: " + ts.URL)
 	log.Print("shortURL: " + shortURL)
-	shortURL = strings.Replace(shortURL, config.flagBaseAddr, ts.URL, 1)
+	shortURL = strings.Replace(shortURL, BaseURI, ts.URL, 1)
 	log.Print("shortURL: " + shortURL)
 
 	for _, tt := range tests {
 		log.Print("GetURL")
 		t.Run(tt.name, func(t *testing.T) {
-
-			// hash := strings.Replace(shortURL, ts.URL+"/", "", 1)
-			// log.Printf("hash: %s", hash)
-			// address, exists := addresses[hash]
-			// if !exists {
-			// 	log.Print("!exists: " + hash)
-			// } else {
-			// 	log.Print("address: " + address)
-			// }
-
 			req, err := http.NewRequest(tt.request.method, shortURL, nil)
 			if err != nil {
 				t.Fatal(err)
