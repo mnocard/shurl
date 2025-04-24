@@ -13,9 +13,6 @@ import (
 
 var addresses = make(map[string]string)
 
-const BaseURI = "http://localhost:8080"
-const LinkURI = "/link/"
-
 func getHash(b []byte) string {
 	h := sha1.New()
 	h.Write(b)
@@ -23,7 +20,7 @@ func getHash(b []byte) string {
 	return sha[0:8]
 }
 
-func AddURL(res http.ResponseWriter, req *http.Request) {
+func addURL(res http.ResponseWriter, req *http.Request) {
 	if req.Method != http.MethodPost {
 		res.WriteHeader(http.StatusBadRequest)
 		return
@@ -40,21 +37,19 @@ func AddURL(res http.ResponseWriter, req *http.Request) {
 
 	res.Header().Set("content-type", "text/plain")
 	res.WriteHeader(http.StatusCreated)
-	res.Write([]byte(BaseURI + LinkURI + hash))
+	res.Write([]byte(config.flagBaseAddr + "/" + hash))
 }
 
-func GetURL(res http.ResponseWriter, req *http.Request) {
+func getURL(res http.ResponseWriter, req *http.Request) {
 	if req.Method != http.MethodGet {
 		res.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	hash := req.URL.Path[len(LinkURI):]
-	hash2 := chi.URLParam(req, "hash")
-	log.Printf("hash 1: %s", hash)
-	log.Printf("hash 2: %s", hash2)
-
-	address, exists := addresses[hash2]
+	hash := chi.URLParam(req, "hash")
+	address, exists := addresses[hash]
+	log.Printf("hash: %s", hash)
+	log.Printf("address: %s", address)
 
 	if !exists {
 		res.WriteHeader(http.StatusBadRequest)
@@ -67,17 +62,17 @@ func GetURL(res http.ResponseWriter, req *http.Request) {
 	res.WriteHeader(http.StatusTemporaryRedirect)
 }
 
-func main() {
+func createMux() *chi.Mux {
 	r := chi.NewRouter()
-
 	r.Use(middleware.Logger)
+	r.Post("/", addURL)
+	r.Get("/{hash}", getURL)
 
-	r.Route("/", func(r chi.Router) {
-		r.Post("/", AddURL)
-		r.Route("/link", func(r chi.Router) {
-			r.Get("/{hash}", GetURL)
-		})
-	})
+	return r
+}
 
-	log.Fatal(http.ListenAndServe(":8080", r))
+func main() {
+	parseFlags()
+	r := createMux()
+	log.Fatal(http.ListenAndServe(config.flagRunAddr, r))
 }
