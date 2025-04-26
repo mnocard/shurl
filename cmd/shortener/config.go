@@ -17,7 +17,7 @@ func parseFlags() {
 		config.flagRunAddr = addr
 	}
 
-	if base, ok := os.LookupEnv("SERVER_ADDRESS"); !ok {
+	if base, ok := os.LookupEnv("BASE_URL"); !ok {
 		flag.StringVar(&config.flagBaseAddr, "b", "http://localhost:8080", "base address for short url")
 	} else {
 		config.flagBaseAddr = base
