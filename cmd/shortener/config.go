@@ -32,24 +32,17 @@ func parseFlags() {
 	// log.Print("addr: " + config.flagRunAddr)
 	// log.Print("base: " + config.flagBaseAddr)
 
-	if addr, ok := os.LookupEnv("SERVER_ADDRESS"); ok {
+	flag.StringVar(&config.flagRunAddr, "a", ":8080", "address and port to run server")
+	flag.StringVar(&config.flagBaseAddr, "b", "http://localhost:8080", "base address for short url")
+
+	if addr, ok := os.LookupEnv("SERVER_ADDRESS"); ok && addr != "" {
 		config.flagRunAddr = addr
 		log.Print("addr, ok")
 	}
 
-	if config.flagRunAddr == "" {
-		flag.StringVar(&config.flagRunAddr, "a", ":8080", "address and port to run server")
-		log.Print("addr, !ok")
-	}
-
-	if base, ok := os.LookupEnv("BASE_URL"); ok {
+	if base, ok := os.LookupEnv("BASE_URL"); ok && base != "" {
 		config.flagBaseAddr = base
 		log.Print("base, ok")
-	}
-
-	if config.flagBaseAddr == "" {
-		flag.StringVar(&config.flagBaseAddr, "b", "http://localhost:8080", "base address for short url")
-		log.Print("base, !ok")
 	}
 
 	flag.Parse()
