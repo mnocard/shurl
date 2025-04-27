@@ -72,7 +72,10 @@ func createMux() *chi.Mux {
 }
 
 func main() {
+	log.Print("main start")
 	parseFlags()
+	log.Print("main parseFlags")
 	r := createMux()
+	log.Print("main createMux")
 	log.Fatal(http.ListenAndServe(config.flagRunAddr, r))
 }
