@@ -9,9 +9,11 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
+	config "github.com/mnocard/shurl/internal/app"
 )
 
 var addresses = make(map[string]string)
+var addr config.Addr
 
 func getHash(b []byte) string {
 	h := sha1.New()
@@ -34,10 +36,12 @@ func addURL(res http.ResponseWriter, req *http.Request) {
 
 	hash := getHash(body)
 	addresses[hash] = string(body)
+	shortURL := addr.FlagBase + "/" + hash
+	log.Printf("addURL. shortURL: %s, c.FlagRunAddr: %s", shortURL, addr.FlagBase)
 
 	res.Header().Set("content-type", "text/plain")
 	res.WriteHeader(http.StatusCreated)
-	res.Write([]byte(config.flagBaseAddr + "/" + hash))
+	res.Write([]byte(shortURL))
 }
 
 func getURL(res http.ResponseWriter, req *http.Request) {
@@ -48,13 +52,12 @@ func getURL(res http.ResponseWriter, req *http.Request) {
 
 	hash := chi.URLParam(req, "hash")
 	address, exists := addresses[hash]
-	log.Printf("hash: %s", hash)
-	log.Printf("address: %s", address)
-
 	if !exists {
 		res.WriteHeader(http.StatusBadRequest)
 		return
 	}
+
+	log.Printf("hash: %s, address: %s", hash, address)
 
 	res.Header().Add("Access-Control-Expose-Headers", "*")
 	res.Header().Add("content-type", "text/plain")
@@ -73,9 +76,9 @@ func createMux() *chi.Mux {
 
 func main() {
 	log.Print("main start")
-	parseFlags()
-	log.Print("main parseFlags")
+	config.ParseFlags(&addr)
+	log.Printf("main parseFlags. config.flagRunAddr: %s, config.flagBaseAddr: %s", addr.FlagRun, addr.FlagBase)
 	r := createMux()
 	log.Print("main createMux")
-	log.Fatal(http.ListenAndServe(config.flagRunAddr, r))
+	log.Fatal(http.ListenAndServe(addr.FlagRun, r))
 }

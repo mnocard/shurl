@@ -9,6 +9,7 @@ import (
 	"strings"
 	"testing"
 
+	config "github.com/mnocard/shurl/internal/app"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -131,6 +132,7 @@ func TestGetURLHandler(t *testing.T) {
 	ts.Start()
 	defer ts.Close()
 
+	config.ParseFlags(&addr)
 	log.Print("AddURL")
 	req, _ := http.NewRequest(http.MethodPost, ts.URL, bytes.NewReader([]byte(url)))
 	resp, _ := http.DefaultClient.Do(req)
@@ -140,22 +142,14 @@ func TestGetURLHandler(t *testing.T) {
 
 	log.Print("ts.URL: " + ts.URL)
 	log.Print("shortURL: " + shortURL)
-	shortURL = strings.Replace(shortURL, config.flagBaseAddr, ts.URL, 1)
+	if addr.FlagBase != "" {
+		shortURL = strings.Replace(shortURL, addr.FlagBase, ts.URL, 1)
+	}
 	log.Print("shortURL: " + shortURL)
 
 	for _, tt := range tests {
 		log.Print("GetURL")
 		t.Run(tt.name, func(t *testing.T) {
-
-			// hash := strings.Replace(shortURL, ts.URL+"/", "", 1)
-			// log.Printf("hash: %s", hash)
-			// address, exists := addresses[hash]
-			// if !exists {
-			// 	log.Print("!exists: " + hash)
-			// } else {
-			// 	log.Print("address: " + address)
-			// }
-
 			req, err := http.NewRequest(tt.request.method, shortURL, nil)
 			if err != nil {
 				t.Fatal(err)
