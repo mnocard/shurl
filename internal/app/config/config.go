@@ -2,7 +2,6 @@ package config
 
 import (
 	"flag"
-	"log"
 	"os"
 )
 
@@ -27,14 +26,9 @@ func ParseFlags(config *Addr) {
 
 	if addr, ok := os.LookupEnv(envServerAddress); ok && addr != "" {
 		config.FlagRun = addr
-		log.Printf("addr, ok, addr: %s", addr)
 	}
 
 	if base, ok := os.LookupEnv(envBaseURL); ok && base != "" {
 		config.FlagBase = base
-		log.Printf("base, ok, base: %s", base)
 	}
-
-	log.Print("addr: " + config.FlagRun)
-	log.Print("base: " + config.FlagBase)
 }

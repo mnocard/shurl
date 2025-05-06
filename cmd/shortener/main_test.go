@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	config "github.com/mnocard/shurl/internal/app"
+	config "github.com/mnocard/shurl/internal/app/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
