@@ -5,12 +5,11 @@ import (
 
 	"github.com/go-chi/chi"
 	config "github.com/mnocard/shurl/internal/app/config"
-	"go.uber.org/zap"
 )
 
 var addresses = make(map[string]string)
 var addr config.Addr
-var sugar zap.SugaredLogger
+var sugar = getLogger()
 
 func createMux() *chi.Mux {
 	r := chi.NewRouter()
@@ -22,14 +21,6 @@ func createMux() *chi.Mux {
 }
 
 func main() {
-	logger, err := zap.NewDevelopment()
-	if err != nil {
-		panic(err)
-	}
-	defer logger.Sync()
-
-	sugar = *logger.Sugar()
-
 	config.ParseFlags(&addr)
 
 	sugar.Infow(

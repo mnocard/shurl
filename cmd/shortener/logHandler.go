@@ -3,6 +3,8 @@ package main
 import (
 	"net/http"
 	"time"
+
+	"go.uber.org/zap"
 )
 
 type (
@@ -48,11 +50,21 @@ func withLogging(h http.Handler) http.Handler {
 		sugar.Infoln(
 			"uri", r.RequestURI,
 			"method", r.Method,
-			"status", responseData.status, // получаем перехваченный код статуса ответа
+			"status", responseData.status,
 			"duration", duration,
-			"size", responseData.size, // получаем перехваченный размер ответа
+			"size", responseData.size,
 		)
 	}
 
 	return http.HandlerFunc(logFn)
+}
+
+func getLogger() zap.SugaredLogger {
+	logger, err := zap.NewDevelopment()
+	if err != nil {
+		panic(err)
+	}
+	defer logger.Sync()
+
+	return *logger.Sugar()
 }
