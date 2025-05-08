@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/go-chi/chi"
+	config "github.com/mnocard/shurl/internal/app"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -138,6 +138,7 @@ func TestGetURLHandler(t *testing.T) {
 	ts := httptest.NewServer(r)
 	defer ts.Close()
 
+	config.ParseFlags(&addr)
 	log.Print("AddURL")
 	req, _ := http.NewRequest(http.MethodPost, ts.URL, bytes.NewReader([]byte(url)))
 	resp, _ := http.DefaultClient.Do(req)
@@ -147,8 +148,12 @@ func TestGetURLHandler(t *testing.T) {
 
 	log.Print("ts.URL: " + ts.URL)
 	log.Print("shortURL: " + shortURL)
-	shortURL = strings.Replace(shortURL, BaseURI, ts.URL, 1)
-	log.Print("shortURL: " + shortURL)
+
+	if addr.FlagBase != "" {
+		shortURL = strings.Replace(shortURL, addr.FlagBase, ts.URL, 1)
+	}
+
+  log.Print("shortURL: " + shortURL)
 
 	for _, tt := range tests {
 		log.Print("GetURL")

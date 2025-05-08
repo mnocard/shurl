@@ -9,9 +9,11 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
+	config "github.com/mnocard/shurl/internal/app"
 )
 
 var addresses = make(map[string]string)
+var addr config.Addr
 
 const BaseURI = "http://localhost:8080"
 const LinkURI = "/link/"
@@ -37,10 +39,12 @@ func AddURL(res http.ResponseWriter, req *http.Request) {
 
 	hash := getHash(body)
 	addresses[hash] = string(body)
+	shortURL := addr.FlagBase + "/" + hash
+	log.Printf("addURL. shortURL: %s, c.FlagRunAddr: %s", shortURL, addr.FlagBase)
 
 	res.Header().Set("content-type", "text/plain")
 	res.WriteHeader(http.StatusCreated)
-	res.Write([]byte(BaseURI + LinkURI + hash))
+	res.Write([]byte(shortURL))
 }
 
 func GetURL(res http.ResponseWriter, req *http.Request) {
@@ -49,17 +53,14 @@ func GetURL(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	hash := req.URL.Path[len(LinkURI):]
-	hash2 := chi.URLParam(req, "hash")
-	log.Printf("hash 1: %s", hash)
-	log.Printf("hash 2: %s", hash2)
-
-	address, exists := addresses[hash2]
-
+	hash := chi.URLParam(req, "hash")
+	address, exists := addresses[hash]
 	if !exists {
 		res.WriteHeader(http.StatusBadRequest)
 		return
 	}
+
+	log.Printf("hash: %s, address: %s", hash, address)
 
 	res.Header().Add("Access-Control-Expose-Headers", "*")
 	res.Header().Add("content-type", "text/plain")
@@ -68,16 +69,10 @@ func GetURL(res http.ResponseWriter, req *http.Request) {
 }
 
 func main() {
-	r := chi.NewRouter()
-
-	r.Use(middleware.Logger)
-
-	r.Route("/", func(r chi.Router) {
-		r.Post("/", AddURL)
-		r.Route("/link", func(r chi.Router) {
-			r.Get("/{hash}", GetURL)
-		})
-	})
-
-	log.Fatal(http.ListenAndServe(":8080", r))
+	log.Print("main start")
+	config.ParseFlags(&addr)
+	log.Printf("main parseFlags. config.flagRunAddr: %s, config.flagBaseAddr: %s", addr.FlagRun, addr.FlagBase)
+	r := createMux()
+	log.Print("main createMux")
+	log.Fatal(http.ListenAndServe(addr.FlagRun, r))
 }
