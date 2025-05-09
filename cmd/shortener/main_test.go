@@ -9,7 +9,9 @@ import (
 	"strings"
 	"testing"
 
-	config "github.com/mnocard/shurl/internal/app/config"
+	"github.com/mnocard/shurl/internal/app/config"
+	"github.com/mnocard/shurl/internal/app/handlers"
+	memStorage "github.com/mnocard/shurl/internal/app/storage/memoryStorage"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -64,7 +66,9 @@ func TestAddURLHandler(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			request := httptest.NewRequest(tt.request.method, tt.request.url, bytes.NewReader(tt.request.body))
 			w := httptest.NewRecorder()
-			h := http.HandlerFunc(addURL)
+
+			handler := handlers.NewHandler(memStorage.NewMemoryStorage())
+			h := http.HandlerFunc(handler.AddURL)
 			h(w, request)
 
 			result := w.Result()
@@ -127,12 +131,13 @@ func TestGetURLHandler(t *testing.T) {
 	}
 
 	log.Print("NewRouter")
-	r := createMux()
+	handler := handlers.NewHandler(memStorage.NewMemoryStorage())
+	r := createMux(handler)
 	ts := httptest.NewUnstartedServer(r)
 	ts.Start()
 	defer ts.Close()
 
-	config.ParseFlags(&addr)
+	addr := config.GetAddresses()
 	log.Print("AddURL")
 	req, _ := http.NewRequest(http.MethodPost, ts.URL, bytes.NewReader([]byte(url)))
 	resp, _ := http.DefaultClient.Do(req)
@@ -143,9 +148,10 @@ func TestGetURLHandler(t *testing.T) {
 	log.Print("ts.URL: " + ts.URL)
 	log.Print("shortURL: " + shortURL)
 	if addr.FlagBase != "" {
+		log.Print("addr.FlagBase: " + addr.FlagBase)
 		shortURL = strings.Replace(shortURL, addr.FlagBase, ts.URL, 1)
+		log.Print("shortURL: " + shortURL)
 	}
-	log.Print("shortURL: " + shortURL)
 
 	for _, tt := range tests {
 		log.Print("GetURL")

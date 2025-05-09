@@ -4,31 +4,33 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi"
-	config "github.com/mnocard/shurl/internal/app/config"
+	"github.com/mnocard/shurl/internal/app/config"
+	"github.com/mnocard/shurl/internal/app/handlers"
+	log "github.com/mnocard/shurl/internal/app/logger/zap"
+	memStorage "github.com/mnocard/shurl/internal/app/storage/memoryStorage"
 )
 
-var addresses = make(map[string]string)
-var addr config.Addr
-var sugar = getLogger()
-
-func createMux() *chi.Mux {
+func createMux(h *handlers.H) *chi.Mux {
 	r := chi.NewRouter()
-	r.Use(withLogging)
-	r.Post("/", addURL)
-	r.Get("/{hash}", getURL)
+	r.Use(log.WithLogging)
+
+	r.Post("/", h.AddURL)
+	r.Get("/{hash}", h.GetURL)
 
 	return r
 }
 
 func main() {
-	config.ParseFlags(&addr)
+	addr := config.GetAddresses()
 
+	sugar := log.GetLogger()
 	sugar.Infow(
 		"Starting server",
 		"addr", addr,
 	)
 
-	r := createMux()
+	h := handlers.NewHandler(memStorage.NewMemoryStorage())
+	r := createMux(h)
 
 	sugar.Info("mux created")
 
