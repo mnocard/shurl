@@ -1,4 +1,4 @@
-package main
+package handlers
 
 import (
 	"bytes"
@@ -9,10 +9,44 @@ import (
 	"strings"
 	"testing"
 
-	config "github.com/mnocard/shurl/internal/app"
+	"github.com/mnocard/shurl/internal/app/config"
+	memStorage "github.com/mnocard/shurl/internal/app/storage/memory"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func TestCreateMux(t *testing.T) {
+	s := memStorage.NewMemoryStorage()
+	h := NewHandler(s)
+
+	tests := []struct {
+		name    string
+		handler *H
+		isError bool
+	}{
+		{
+			name:    "create mux success",
+			handler: h,
+			isError: false,
+		},
+		{
+			name:    "create mux error without handler",
+			handler: nil,
+			isError: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			mux, err := CreateMux(test.handler)
+			if err != nil {
+				require.True(t, test.isError)
+			} else {
+				require.NotNil(t, mux)
+			}
+		})
+	}
+}
 
 func TestAddURLHandler(t *testing.T) {
 	type want struct {
@@ -64,7 +98,9 @@ func TestAddURLHandler(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			request := httptest.NewRequest(tt.request.method, tt.request.url, bytes.NewReader(tt.request.body))
 			w := httptest.NewRecorder()
-			h := http.HandlerFunc(addURL)
+
+			handler := NewHandler(memStorage.NewMemoryStorage())
+			h := http.HandlerFunc(handler.AddURL)
 			h(w, request)
 
 			result := w.Result()
@@ -127,12 +163,13 @@ func TestGetURLHandler(t *testing.T) {
 	}
 
 	log.Print("NewRouter")
-	r := createMux()
+	handler := NewHandler(memStorage.NewMemoryStorage())
+	r, _ := CreateMux(handler)
 	ts := httptest.NewUnstartedServer(r)
 	ts.Start()
 	defer ts.Close()
 
-	config.ParseFlags(&addr)
+	addr := config.GetAddresses()
 	log.Print("AddURL")
 	req, _ := http.NewRequest(http.MethodPost, ts.URL, bytes.NewReader([]byte(url)))
 	resp, _ := http.DefaultClient.Do(req)
@@ -143,9 +180,10 @@ func TestGetURLHandler(t *testing.T) {
 	log.Print("ts.URL: " + ts.URL)
 	log.Print("shortURL: " + shortURL)
 	if addr.FlagBase != "" {
+		log.Print("addr.FlagBase: " + addr.FlagBase)
 		shortURL = strings.Replace(shortURL, addr.FlagBase, ts.URL, 1)
+		log.Print("shortURL: " + shortURL)
 	}
-	log.Print("shortURL: " + shortURL)
 
 	for _, tt := range tests {
 		log.Print("GetURL")
