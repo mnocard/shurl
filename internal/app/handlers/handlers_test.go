@@ -1,4 +1,4 @@
-package main
+package handlers
 
 import (
 	"bytes"
@@ -10,11 +10,43 @@ import (
 	"testing"
 
 	"github.com/mnocard/shurl/internal/app/config"
-	"github.com/mnocard/shurl/internal/app/handlers"
-	memStorage "github.com/mnocard/shurl/internal/app/storage/memoryStorage"
+	memStorage "github.com/mnocard/shurl/internal/app/storage/memorystorage"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func TestCreateMux(t *testing.T) {
+	s := memStorage.NewMemoryStorage()
+	h := NewHandler(s)
+
+	tests := []struct {
+		name    string
+		handler *H
+		isError bool
+	}{
+		{
+			name:    "create mux success",
+			handler: h,
+			isError: false,
+		},
+		{
+			name:    "create mux error without handler",
+			handler: nil,
+			isError: true,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			mux, err := CreateMux(test.handler)
+			if err != nil {
+				require.True(t, test.isError)
+			} else {
+				require.NotNil(t, mux)
+			}
+		})
+	}
+}
 
 func TestAddURLHandler(t *testing.T) {
 	type want struct {
@@ -67,7 +99,7 @@ func TestAddURLHandler(t *testing.T) {
 			request := httptest.NewRequest(tt.request.method, tt.request.url, bytes.NewReader(tt.request.body))
 			w := httptest.NewRecorder()
 
-			handler := handlers.NewHandler(memStorage.NewMemoryStorage())
+			handler := NewHandler(memStorage.NewMemoryStorage())
 			h := http.HandlerFunc(handler.AddURL)
 			h(w, request)
 
@@ -131,8 +163,8 @@ func TestGetURLHandler(t *testing.T) {
 	}
 
 	log.Print("NewRouter")
-	handler := handlers.NewHandler(memStorage.NewMemoryStorage())
-	r := createMux(handler)
+	handler := NewHandler(memStorage.NewMemoryStorage())
+	r, _ := CreateMux(handler)
 	ts := httptest.NewUnstartedServer(r)
 	ts.Start()
 	defer ts.Close()

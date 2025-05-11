@@ -47,7 +47,7 @@ func TestParseFlags(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests { // цикл по всем тестам
+	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			flag.CommandLine = flag.NewFlagSet(test.name, flag.ContinueOnError)
 

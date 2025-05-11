@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"io"
 	"net/http"
 
@@ -12,6 +13,20 @@ import (
 
 type H struct {
 	storage storage.S
+}
+
+func CreateMux(h *H) (*chi.Mux, error) {
+	if h == nil {
+		return nil, errors.New("handler is nil")
+	}
+
+	r := chi.NewRouter()
+	r.Use(log.WithLogging)
+
+	r.Post("/", h.AddURL)
+	r.Get("/{hash}", h.GetURL)
+
+	return r, nil
 }
 
 func NewHandler(s storage.S) *H {

@@ -28,13 +28,9 @@ func parseFlags() {
 		addresses = &Addr{}
 	}
 
-	sugar := log.GetLogger()
-	sugar.Info("parseFlags()")
 	flag.StringVar(&addresses.FlagRun, flagA, defRunAddr, "address and port to run server")
 	flag.StringVar(&addresses.FlagBase, flagB, defBaseAddr, "base address for short url")
 	flag.Parse()
-
-	sugar.Infow("parseFlags()", "addresses", addresses)
 
 	if addr, ok := os.LookupEnv(envServerAddress); ok && addr != "" {
 		addresses.FlagRun = addr
@@ -43,20 +39,20 @@ func parseFlags() {
 	if base, ok := os.LookupEnv(envBaseURL); ok && base != "" {
 		addresses.FlagBase = base
 	}
-	sugar.Infow("parseFlags()", "addresses", addresses)
+
+	sugar := log.GetLogger()
+	sugar.Infow("parseFlags.", "addresses", addresses)
 }
 
 func GetAddresses() *Addr {
 	sugar := log.GetLogger()
-	sugar.Info("GetAddresses()")
 	if addresses != nil {
-		sugar.Info("GetAddresses() addresses != nil")
+		sugar.Info("GetAddresses. addresses != nil")
 		return addresses
 	}
 
-	sugar.Info("GetAddresses() addresses == nil")
-	sugar.Infow("GetAddresses() 1", "addresses", addresses)
+	sugar.Info("GetAddresses. addresses == nil")
 	parseFlags()
-	sugar.Infow("GetAddresses() 2", "addresses", addresses)
+	sugar.Infow("GetAddresses.", "addresses", addresses)
 	return addresses
 }
