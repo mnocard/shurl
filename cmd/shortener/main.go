@@ -6,7 +6,7 @@ import (
 	"github.com/mnocard/shurl/internal/app/config"
 	"github.com/mnocard/shurl/internal/app/handlers"
 	log "github.com/mnocard/shurl/internal/app/logger/zap"
-	memStorage "github.com/mnocard/shurl/internal/app/storage/memorystorage"
+	memStorage "github.com/mnocard/shurl/internal/app/storage/memory"
 )
 
 func main() {

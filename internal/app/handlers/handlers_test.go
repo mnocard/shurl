@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/mnocard/shurl/internal/app/config"
-	memStorage "github.com/mnocard/shurl/internal/app/storage/memorystorage"
+	memStorage "github.com/mnocard/shurl/internal/app/storage/memory"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
