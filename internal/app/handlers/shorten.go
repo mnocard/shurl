@@ -61,7 +61,7 @@ func (h *H) ApiShorten(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	res.Header().Set("content-type", "text/plain")
+	res.Header().Set("content-type", "application/json")
 	res.WriteHeader(http.StatusCreated)
 	res.Write(data)
 	sugar.Info("ApiShorten. End")
