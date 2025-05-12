@@ -17,11 +17,11 @@ type Response struct {
 	Result string `json:"result"`
 }
 
-func (h *H) ApiShorten(res http.ResponseWriter, req *http.Request) {
+func (h *H) APIShorten(res http.ResponseWriter, req *http.Request) {
 	sugar := log.GetLogger()
-	sugar.Info("ApiShorten. Start")
+	sugar.Info("APIShorten. Start")
 	if req.Method != http.MethodPost {
-		sugar.Errorw("ApiShorten. Method error", "Method", req.Method)
+		sugar.Errorw("APIShorten. Method error", "Method", req.Method)
 		res.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -31,20 +31,20 @@ func (h *H) ApiShorten(res http.ResponseWriter, req *http.Request) {
 
 	_, err := buf.ReadFrom(req.Body)
 	if err != nil {
-		sugar.Error("ApiShorten. Read body error")
+		sugar.Error("APIShorten. Read body error")
 		http.Error(res, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	if err = json.Unmarshal(buf.Bytes(), &request); err != nil {
-		sugar.Errorw("ApiShorten. Unmarshal error", "error", err)
+		sugar.Errorw("APIShorten. Unmarshal error", "error", err)
 		http.Error(res, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	hash, err := h.storage.Add(string(request.URL))
 	if err != nil {
-		sugar.Errorw("ApiShorten. Get hash error", "error", err)
+		sugar.Errorw("APIShorten. Get hash error", "error", err)
 		res.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -56,7 +56,7 @@ func (h *H) ApiShorten(res http.ResponseWriter, req *http.Request) {
 
 	data, err := json.Marshal(response)
 	if err != nil {
-		sugar.Errorw("ApiShorten. Marshal error", "error", err)
+		sugar.Errorw("APIShorten. Marshal error", "error", err)
 		http.Error(res, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -64,5 +64,5 @@ func (h *H) ApiShorten(res http.ResponseWriter, req *http.Request) {
 	res.Header().Set("content-type", "application/json")
 	res.WriteHeader(http.StatusCreated)
 	res.Write(data)
-	sugar.Info("ApiShorten. End")
+	sugar.Info("APIShorten. End")
 }

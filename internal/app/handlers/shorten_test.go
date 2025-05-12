@@ -15,7 +15,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestApiShorten(t *testing.T) {
+func TestAPIShorten(t *testing.T) {
 	url := "http://ya.ru"
 	hash := hash.GetHash([]byte(url))
 	addr := config.GetAddresses()
@@ -72,7 +72,7 @@ func TestApiShorten(t *testing.T) {
 			w := httptest.NewRecorder()
 
 			handler := NewHandler(memStorage.NewMemoryStorage())
-			h := http.HandlerFunc(handler.ApiShorten)
+			h := http.HandlerFunc(handler.APIShorten)
 			h(w, request)
 
 			result := w.Result()
