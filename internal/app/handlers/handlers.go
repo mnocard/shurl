@@ -24,6 +24,7 @@ func CreateMux(h *H) (*chi.Mux, error) {
 	r.Use(log.WithLogging)
 
 	r.Post("/", h.AddURL)
+	r.Post("/api/shorten", h.ApiShorten)
 	r.Get("/{hash}", h.GetURL)
 
 	return r, nil
