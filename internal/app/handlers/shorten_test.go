@@ -46,7 +46,7 @@ func TestAPIShorten(t *testing.T) {
 				body:   Request{URL: url},
 			},
 			want: want{
-				contentType: "text/plain",
+				contentType: "application/json",
 				statusCode:  201,
 				response:    Response{Result: result},
 			},
