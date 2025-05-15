@@ -129,7 +129,6 @@ func TestGetURLHandler(t *testing.T) {
 	}
 
 	type request struct {
-		url    string
 		method string
 	}
 

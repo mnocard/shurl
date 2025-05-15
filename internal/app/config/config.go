@@ -4,7 +4,7 @@ import (
 	"flag"
 	"os"
 
-	log "github.com/mnocard/shurl/internal/app/logger/zap"
+	log "github.com/mnocard/shurl/internal/app/middleware/logger/zap"
 )
 
 var addresses *Addr

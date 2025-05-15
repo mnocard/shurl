@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/mnocard/shurl/internal/app/config"
-	log "github.com/mnocard/shurl/internal/app/logger/zap"
+	log "github.com/mnocard/shurl/internal/app/middleware/logger/zap"
 )
 
 type Request struct {

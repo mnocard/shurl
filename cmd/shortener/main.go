@@ -5,7 +5,7 @@ import (
 
 	"github.com/mnocard/shurl/internal/app/config"
 	"github.com/mnocard/shurl/internal/app/handlers"
-	log "github.com/mnocard/shurl/internal/app/logger/zap"
+	log "github.com/mnocard/shurl/internal/app/middleware/logger/zap"
 	memStorage "github.com/mnocard/shurl/internal/app/storage/memory"
 )
 

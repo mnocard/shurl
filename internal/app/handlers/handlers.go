@@ -7,7 +7,7 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/mnocard/shurl/internal/app/config"
-	log "github.com/mnocard/shurl/internal/app/logger/zap"
+	log "github.com/mnocard/shurl/internal/app/middleware/logger/zap"
 	"github.com/mnocard/shurl/internal/app/storage"
 )
 
