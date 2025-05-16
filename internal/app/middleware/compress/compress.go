@@ -5,7 +5,6 @@ import (
 	"compress/gzip"
 	"io"
 	"net/http"
-	"slices"
 	"strings"
 
 	log "github.com/mnocard/shurl/internal/app/middleware/logger/zap"
@@ -86,7 +85,14 @@ func DecompressHandle(next http.Handler) http.Handler {
 		sugar := log.GetLogger()
 
 		contentEncodingHeaders := r.Header.Values("Content-Encoding")
-		isContainsGzip := slices.Contains(contentEncodingHeaders, "gzip")
+		isContainsGzip := false
+		for _, v := range contentEncodingHeaders {
+			if strings.Contains(v, "gzip") {
+				isContainsGzip = true
+				break
+			}
+		}
+
 		if isContainsGzip {
 			sugar.Info("DecompressHandle. isContainsGzip true")
 			var reader io.ReadCloser
