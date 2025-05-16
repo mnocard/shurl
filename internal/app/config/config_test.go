@@ -47,20 +47,18 @@ func TestParseFlags(t *testing.T) {
 		},
 	}
 
-	for _, test := range tests { // цикл по всем тестам
+	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			flag.CommandLine = flag.NewFlagSet(test.name, flag.ContinueOnError)
-
-			var addr Addr
 
 			t.Setenv(envServerAddress, test.envRunAddr)
 			t.Setenv(envBaseURL, test.envBaseAddr)
 
 			os.Args = []string{"cmd", "-" + flagA, test.flagRunAddr, "-" + flagB, test.flagBaseAddr}
 
-			ParseFlags(&addr)
-			assert.Equal(t, test.expectRunAddr, addr.FlagRun)
-			assert.Equal(t, test.expectBaseAddr, addr.FlagBase)
+			parseFlags()
+			assert.Equal(t, test.expectRunAddr, addresses.FlagRun)
+			assert.Equal(t, test.expectBaseAddr, addresses.FlagBase)
 		})
 	}
 }
