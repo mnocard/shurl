@@ -33,7 +33,7 @@ func CompressHandle(next http.Handler) http.Handler {
 		}
 
 		if !isAcceptGzip {
-			sugar.Info("CompressHandle. AcceptGzip false")
+			sugar.Info("CompressHandle. Accept gzip false")
 			next.ServeHTTP(w, r)
 			return
 		}
@@ -94,7 +94,7 @@ func DecompressHandle(next http.Handler) http.Handler {
 		}
 
 		if isContainsGzip {
-			sugar.Info("DecompressHandle. isContainsGzip true")
+			sugar.Info("DecompressHandle. Need decompress")
 			var reader io.ReadCloser
 
 			gz, err := gzip.NewReader(r.Body)

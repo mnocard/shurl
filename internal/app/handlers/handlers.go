@@ -7,7 +7,6 @@ import (
 
 	"github.com/go-chi/chi"
 	"github.com/mnocard/shurl/internal/app/config"
-	"github.com/mnocard/shurl/internal/app/middleware/compress"
 	log "github.com/mnocard/shurl/internal/app/middleware/logger/zap"
 	"github.com/mnocard/shurl/internal/app/storage"
 )
@@ -23,8 +22,8 @@ func CreateMux(h *H) (*chi.Mux, error) {
 
 	r := chi.NewRouter()
 	r.Use(log.WithLogging)
-	r.Use(compress.DecompressHandle)
-	r.Use(compress.CompressHandle)
+	// r.Use(compress.DecompressHandle)
+	// r.Use(compress.CompressHandle)
 
 	r.Post("/", h.AddURL)
 	r.Post("/api/shorten", h.APIShorten)
