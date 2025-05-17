@@ -20,7 +20,7 @@ type FileStorage struct {
 }
 
 type record struct {
-	Uuid        string `json:"uuid"`
+	UUID        string `json:"uuid"`
 	ShortURL    string `json:"short_url"`
 	OriginalURL string `json:"original_url"`
 }
@@ -47,8 +47,8 @@ func NewFileStorage(filePath string) (*FileStorage, error) {
 			return nil, err
 		}
 
-		if record.Uuid != "0" {
-			count, err = strconv.Atoi(record.Uuid)
+		if record.UUID != "0" {
+			count, err = strconv.Atoi(record.UUID)
 			if err != nil {
 				return nil, err
 			}
@@ -65,11 +65,11 @@ func NewFileStorage(filePath string) (*FileStorage, error) {
 	}, nil
 }
 
-func (c *FileStorage) readLine(hash string) (*record, error) {
+func (f *FileStorage) readLine(hash string) (*record, error) {
 	sugar := log.GetLogger()
 	sugar.Infoln("readLine start, hash", hash)
 
-	file, err := os.OpenFile(c.filePath, os.O_RDONLY, 0666)
+	file, err := os.OpenFile(f.filePath, os.O_RDONLY, 0666)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +100,7 @@ func (c *FileStorage) readLine(hash string) (*record, error) {
 	return nil, errors.New("not found")
 }
 
-func (p *FileStorage) writeLine(record *record) error {
+func (f *FileStorage) writeLine(record *record) error {
 	sugar := log.GetLogger()
 	data, err := json.Marshal(&record)
 	if err != nil {
@@ -108,29 +108,29 @@ func (p *FileStorage) writeLine(record *record) error {
 		return err
 	}
 
-	if _, err := p.writer.Write(data); err != nil {
+	if _, err := f.writer.Write(data); err != nil {
 		sugar.Error("writeLine p.writer.Write error", err)
 		return err
 	}
 
-	if err := p.writer.WriteByte('\n'); err != nil {
+	if err := f.writer.WriteByte('\n'); err != nil {
 		sugar.Error("writeLine p.writer.WriteByte error", err)
 		return err
 	}
 
 	sugar.Infow("writeLine success", "record", record)
 
-	return p.writer.Flush()
+	return f.writer.Flush()
 }
 
-func (c *FileStorage) Close() error {
+func (f *FileStorage) Close() error {
 	sugar := log.GetLogger()
 	sugar.Info("Close")
-	return c.file.Close()
+	return f.file.Close()
 }
 
-func (s *FileStorage) Get(hash string) (string, error) {
-	record, err := s.readLine(hash)
+func (f *FileStorage) Get(hash string) (string, error) {
+	record, err := f.readLine(hash)
 	if err != nil {
 		return "", err
 	}
@@ -138,7 +138,7 @@ func (s *FileStorage) Get(hash string) (string, error) {
 	return record.OriginalURL, nil
 }
 
-func (s *FileStorage) Add(u string) (string, error) {
+func (f *FileStorage) Add(u string) (string, error) {
 	if u == "" {
 		return "", errors.New("url is empty")
 	}
@@ -147,21 +147,21 @@ func (s *FileStorage) Add(u string) (string, error) {
 		return "", err
 	}
 
-	count := s.linesCount + 1
+	count := f.linesCount + 1
 
 	h := hash.GetHash([]byte(u))
 	r := record{
-		Uuid:        strconv.Itoa(count),
+		UUID:        strconv.Itoa(count),
 		ShortURL:    h,
 		OriginalURL: u,
 	}
 
-	err := s.writeLine(&r)
+	err := f.writeLine(&r)
 	if err != nil {
 		return "", err
 	}
 
-	s.linesCount = count
+	f.linesCount = count
 
 	return h, nil
 }
