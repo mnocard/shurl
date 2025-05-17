@@ -60,7 +60,7 @@ func TestGet(t *testing.T) {
 		{
 			name:        "get error url not found",
 			addedURL:    "",
-			expectedURL: "http://localhost:8383",
+			expectedURL: "",
 			isError:     true,
 		},
 	}

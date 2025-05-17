@@ -73,6 +73,8 @@ func (f *FileStorage) readLine(hash string) (*record, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer file.Close()
+
 	reader := bufio.NewReader(file)
 
 	for {
