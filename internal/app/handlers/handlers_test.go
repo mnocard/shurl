@@ -168,7 +168,7 @@ func TestGetURLHandler(t *testing.T) {
 	ts.Start()
 	defer ts.Close()
 
-	addr := config.GetAddresses()
+	config := config.GetConfig()
 	log.Print("AddURL")
 	req, _ := http.NewRequest(http.MethodPost, ts.URL, bytes.NewReader([]byte(url)))
 	resp, _ := http.DefaultClient.Do(req)
@@ -178,9 +178,9 @@ func TestGetURLHandler(t *testing.T) {
 
 	log.Print("ts.URL: " + ts.URL)
 	log.Print("shortURL: " + shortURL)
-	if addr.FlagBase != "" {
-		log.Print("addr.FlagBase: " + addr.FlagBase)
-		shortURL = strings.Replace(shortURL, addr.FlagBase, ts.URL, 1)
+	if config.FlagBase != "" {
+		log.Print("config.FlagBase: " + config.FlagBase)
+		shortURL = strings.Replace(shortURL, config.FlagBase, ts.URL, 1)
 		log.Print("shortURL: " + shortURL)
 	}
 

@@ -6,19 +6,24 @@ import (
 	"github.com/mnocard/shurl/internal/app/config"
 	"github.com/mnocard/shurl/internal/app/handlers"
 	log "github.com/mnocard/shurl/internal/app/middleware/logger/zap"
-	memStorage "github.com/mnocard/shurl/internal/app/storage/memory"
+	fStorage "github.com/mnocard/shurl/internal/app/storage/file"
 )
 
 func main() {
-	addr := config.GetAddresses()
+	config := config.GetConfig()
 
 	sugar := log.GetLogger()
 	sugar.Infow(
 		"Starting server",
-		"addr", addr,
+		"config", config,
 	)
 
-	s := memStorage.NewMemoryStorage()
+	s, err := fStorage.NewFileStorage(config.FileStoragePath)
+	if err != nil {
+		sugar.Fatalw(err.Error(), "event", "create file storage")
+	}
+	defer s.Close()
+
 	h := handlers.NewHandler(s)
 	r, err := handlers.CreateMux(h)
 	if err != nil {
@@ -27,7 +32,7 @@ func main() {
 
 	sugar.Info("mux created")
 
-	if err := http.ListenAndServe(addr.FlagRun, r); err != nil {
+	if err := http.ListenAndServe(config.FlagRun, r); err != nil {
 		sugar.Fatalw(err.Error(), "event", "start server")
 	}
 }

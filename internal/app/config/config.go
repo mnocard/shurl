@@ -7,52 +7,61 @@ import (
 	log "github.com/mnocard/shurl/internal/app/middleware/logger/zap"
 )
 
-var addresses *Addr
+var config *Config
 
-type Addr struct {
-	FlagRun  string
-	FlagBase string
+type Config struct {
+	FlagRun         string
+	FlagBase        string
+	FileStoragePath string
 }
 
 const (
 	envServerAddress = "SERVER_ADDRESS"
 	envBaseURL       = "BASE_URL"
+	envFilePath      = "FILE_STORAGE_PATH"
 	flagA            = "a"
 	flagB            = "b"
+	flagF            = "f"
 	defRunAddr       = ":8080"
 	defBaseAddr      = "http://localhost:8080"
+	defFileStorage   = "storage.txt"
 )
 
 func parseFlags() {
-	if addresses == nil {
-		addresses = &Addr{}
+	if config == nil {
+		config = &Config{}
 	}
 
-	flag.StringVar(&addresses.FlagRun, flagA, defRunAddr, "address and port to run server")
-	flag.StringVar(&addresses.FlagBase, flagB, defBaseAddr, "base address for short url")
+	flag.StringVar(&config.FlagRun, flagA, defRunAddr, "address and port to run server")
+	flag.StringVar(&config.FlagBase, flagB, defBaseAddr, "base address for short url")
+	flag.StringVar(&config.FileStoragePath, flagF, defFileStorage, "file storage path")
 	flag.Parse()
 
 	if addr, ok := os.LookupEnv(envServerAddress); ok && addr != "" {
-		addresses.FlagRun = addr
+		config.FlagRun = addr
 	}
 
 	if base, ok := os.LookupEnv(envBaseURL); ok && base != "" {
-		addresses.FlagBase = base
+		config.FlagBase = base
+	}
+
+	if filePath, ok := os.LookupEnv(envFilePath); ok && filePath != "" {
+		config.FileStoragePath = filePath
 	}
 
 	sugar := log.GetLogger()
-	sugar.Infow("parseFlags.", "addresses", addresses)
+	sugar.Infow("parseFlags.", "config", config)
 }
 
-func GetAddresses() *Addr {
+func GetConfig() *Config {
 	sugar := log.GetLogger()
-	if addresses != nil {
+	if config != nil {
 		sugar.Info("GetAddresses. addresses != nil")
-		return addresses
+		return config
 	}
 
 	sugar.Info("GetAddresses. addresses == nil")
 	parseFlags()
-	sugar.Infow("GetAddresses.", "addresses", addresses)
-	return addresses
+	sugar.Infow("GetAddresses.", "addresses", config)
+	return config
 }

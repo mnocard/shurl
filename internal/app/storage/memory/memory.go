@@ -19,6 +19,10 @@ func NewMemoryStorage() *MemoryStorage {
 	}
 }
 
+func (s *MemoryStorage) Close() error {
+	return nil
+}
+
 func (s *MemoryStorage) Get(hash string) (string, error) {
 	s.mu.RLock()
 	defer s.mu.RUnlock()

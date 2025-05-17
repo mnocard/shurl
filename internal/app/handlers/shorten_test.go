@@ -18,8 +18,8 @@ import (
 func TestAPIShorten(t *testing.T) {
 	url := "http://ya.ru"
 	hash := hash.GetHash([]byte(url))
-	addr := config.GetAddresses()
-	result := addr.FlagBase + "/" + hash
+	config := config.GetConfig()
+	result := config.FlagBase + "/" + hash
 
 	type want struct {
 		contentType string

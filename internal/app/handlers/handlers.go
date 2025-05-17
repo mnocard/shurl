@@ -55,11 +55,11 @@ func (h *H) AddURL(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	addr := config.GetAddresses()
-	shortURL := addr.FlagBase + "/" + hash
+	config := config.GetConfig()
+	shortURL := config.FlagBase + "/" + hash
 
 	sugar := log.GetLogger()
-	sugar.Infof("addURL. shortURL: %s, c.FlagRunAddr: %s", shortURL, addr.FlagBase)
+	sugar.Infof("addURL. shortURL: %s, c.FlagRunAddr: %s", shortURL, config.FlagBase)
 
 	res.Header().Set("content-type", "text/plain")
 	res.WriteHeader(http.StatusCreated)

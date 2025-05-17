@@ -57,8 +57,8 @@ func TestParseFlags(t *testing.T) {
 			os.Args = []string{"cmd", "-" + flagA, test.flagRunAddr, "-" + flagB, test.flagBaseAddr}
 
 			parseFlags()
-			assert.Equal(t, test.expectRunAddr, addresses.FlagRun)
-			assert.Equal(t, test.expectBaseAddr, addresses.FlagBase)
+			assert.Equal(t, test.expectRunAddr, config.FlagRun)
+			assert.Equal(t, test.expectBaseAddr, config.FlagBase)
 		})
 	}
 }

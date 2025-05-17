@@ -49,9 +49,9 @@ func (h *H) APIShorten(res http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	addr := config.GetAddresses()
+	config := config.GetConfig()
 	response := Response{
-		Result: addr.FlagBase + "/" + hash,
+		Result: config.FlagBase + "/" + hash,
 	}
 
 	data, err := json.Marshal(response)
